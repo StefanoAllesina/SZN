@@ -12,8 +12,7 @@ To follow the material, you need to:
    - `ggnetwork`
 
 ## Background material
-Before class, please work through [this tutorial](R_tutorial.md)
-
+Before class, please work through [this tutorial](R_tutorial)
 
 ## Lecture
 We're going to be working on this tutorial
