@@ -12,7 +12,7 @@ To follow the material, you need to:
    - `ggnetwork`
 
 ## Background material
-Before class, please work through this tutorial
+Before class, please work through [this tutorial](https://github.com/StefanoAllesina/SZN/raw/master/lecture/R_tutorial.html)
 
 
 ## Lecture
