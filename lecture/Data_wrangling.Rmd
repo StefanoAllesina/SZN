@@ -1,0 +1,291 @@
+---
+title: "Data wrangling & visualization in R: a tour of the tidyverse"
+author: "Stefano Allesina"
+date: "Oct 4, 2018"
+output:
+  github_document:
+  toc: no
+urlcolor: blue
+---
+  
+## Before we start
+Let's load all of the packages we'll need. If you need to install any of these, type `install.packages("my_package_name")` in the console.
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse) # data wrangling and visualization
+library(igraph) # network analysis
+library(ggnetwork) # networks in ggplot
+```
+
+## Data wrangling
+As biologists living in the XXI century, we are often faced with tons of data, possibly replicated over several organisms, treatments, or locations. We would like to streamline and automate our analysis as much as possible, writing scripts that are easy to read, fast to run, and easy to debug. Base `R` can get the job done, but often the code contains complicated operations (think of the cases in which you used `lapply` only because of its speed), and a lot of `$` signs and brackets.
+
+We're going to learn about the `tidyverse` bundle of packages: this is a collection of `R` packages, which can be used to manipulate large data frames in a simple and straightforward way. These tools are also much faster than the corresponding base `R` commands, are very compact, and can be concatenated into "pipelines". Moreover, all of the packages in the bundle share the same philosophy, and are seamlessly integrated.
+
+## Reading the data
+The package `readr` provides new commands to read data into `R`. It provides the functions
+- `read_csv()`: comma separated (CSV) files
+- `read_tsv()`: tab separated files
+- `read_delim()`: general delimited files
+- `read_fwf()`: fixed width files
+- `read_table()`: tabular files where colums are separated by white-space.
+
+These commands are much faster than the base-`R` equivalents. Also, they have better control of time/date columns, do not convert strings into factors, and show a progress bar when the file to read is large.
+
+Let's try it out. For this tutorial, we are going to use a dataset containing about 20,000 scientific articles that mention "plankton" in the title, abstract or keyword, and that have been published after 1990:
+```{r, message=FALSE, warning=FALSE}
+papers <- read_csv("../data/papers_plankton.csv")
+```
+
+What is our `paper` object?
+```{r}
+class(papers)
+```
+
+This is the main class provided by the `tidyverse`, called a "tibble". Basically, it's an improved version of the `data.frame` of base-`R`. The nice feature of `tbl` objects is that they will print only what fits on the screen, and also give you useful information on the size of the data, as well as the type of data  in each column. Other than that, a `tbl` object behaves very much like a `data.frame`. In some rare cases, you want to transform the `tbl` back into a `data.frame`. For this, use the function `as.data.frame(tbl_object)`.
+
+We can take a look at the data using one of several functions:
+```{r}
+head(papers) # first few rows
+tail(papers) # last few rows
+glimpse(papers) # structure of the table
+# to see in a spreadsheet View(papers)
+```
+
+## Selecting rows and columns
+There are many ways to subset the data, either by row (subsetting the *observations*), or by column (subsetting the *variables*). For example, suppose we want to count how many of papers were published in `Marine Ecology Progress Series`. The column `Source_title` contains the title of the journal: let's extract only the papers in MEPS:
+
+```{r}
+filter(papers, Source_title == "Marine Ecology Progress Series")
+```
+
+You can see that "only" 754 papers mentioning plankton were published in this journal. We have used the command `filter(tbl, conditions)` to select certain observations. We can combine several conditions, by listing them side by side, possibly using logical operators.
+
+> **Exercise:** what does this do?
+>```{r, eval=FALSE}
+ filter(papers, Cited_by > 100, Source_title == "Science", Year > 2014)
+ ```
+
+We can also select particular variables using the function `select(tbl, cols to select)`. For example, select `Source_title` and `Year`:
+```{r}
+select(papers, Source_title, Year)
+```
+
+How many journals are represented in the data set? We can use the function `distinct(tbl)` to retain only the rows that differ from each other:
+```{r, eval=FALSE}
+distinct(select(papers, Source_title))
+```
+
+Showing that there are 2082 journals, once we removed the duplicates. 
+Other ways to subset observations:
+
+- `sample_n(tbl, howmany, replace = TRUE)` sample `howmany` rows at random with replacement
+- `sample_frac(tbl, proportion, replace = FALSE)` sample a certain proportion (e.g. `0.2` for 20%) of rows at random without replacement
+- `slice(tbl, 50:100)` extract the rows between `50` and `100`
+- `top_n(tbl, 10, Cited_by)` extract the first `10` rows, once ordered by `Cited_by`
+
+More ways to select columns:
+
+- `select(papers, contains("Author"))` select all columns containing the word `Author`
+- `select(papers, -Author_Ids, -Title)` exclude the columns `Author_Ids` and `Title`
+- `select(papers, matches("[Tt]itle"))` select all columns whose names match a regular expression
+
+## Creating pipelines using `%>%`
+We've been calling nested functions, such as `distinct(select(papers, ...))`. If you have to add another layer or two, the code would become unreadable. `dplyr` allows you to "un-nest" these functions and create a "pipeline", in which you concatenate commands separated by the special operator `%>%` (in `RStudio`, press `Ctrl + Shift + M`). For example:
+
+```{r, eval=FALSE}
+papers %>% # take a data table
+  select(Source_title) %>% # select a column
+  distinct() # remove duplicates
+```
+
+does exactly the same as the command above, but is much more readable. By concatenating many commands, you can create incredibly complex pipelines while retaining readability.
+
+## Renaming columns
+To rename one or more columns, use `rename()`:
+```{r}
+papers %>% rename(au = Authors)
+```
+
+## Adding new variables using mutate
+If you want to add one or more new columns, or you want to modify an existing column, use the function `mutate`. For example, the data reports `NA` for all papers that have zero citations. Let's change that to zero:
+
+```{r}
+papers <- papers %>% mutate(Cited_by = ifelse(is.na(Cited_by), 0, Cited_by))
+```
+
+Similarly, if we wanted to compute the number of citations by year, we could use:
+```{r}
+papers %>% 
+  mutate(Cit_yr = Cited_by / (2019 - Year)) %>% 
+  select(Cited_by, Year, Cit_yr)
+```
+
+Use the function `transmute()` to create a new column and drop the original columns.
+
+## Ordering the data 
+To order the data according to one or more variables, use `arrange()`:
+```{r}
+papers %>% select(Source_title, Year, Cited_by) %>% arrange(Cited_by)
+papers %>% select(Source_title, Year, Cited_by) %>% arrange(desc(Cited_by), desc(Year))
+```
+
+## Producing summaries
+Sometimes we need to calculate statistics on certain columns. For example, calculate the average number of citations. We can do this using `summarise`:
+```{r, eval=FALSE}
+papers %>% summarise(avg = mean(Cited_by))
+```
+
+which returns a `tbl` object with just the average number of citations. You can combine multiple statistics (use `first`, `last`, `min`, `max`, `n` [count the number of rows], `n_distinct` [count the number of distinct rows], `mean`, `median`, `var`, `sd`, etc.):
+
+```{r}
+papers %>% summarise(avg = mean(Cited_by), 
+                     sd = sd(Cited_by), 
+                     median = median(Cited_by))
+```
+
+## Summaries by group
+One of the most useful features of `dplyr` is the ability to produce statistics for the data once subsetted by *groups*. For example, we would like to measure the average number of citations for papers in a given journal/year combination. We can then group the data by `Source_title` and `Year`, and calculate the mean `Cited_by` once the data is split into groups:
+
+```{r}
+papers %>% group_by(Source_title, Year) %>% 
+  summarise(mean_cits = mean(Cited_by)) %>% 
+  select(Source_title, Year, mean_cits) %>% 
+  arrange(desc(Source_title), Year, mean_cits)
+```
+
+# Data plotting
+The most salient feature of scientific graphs should be clarity. Each figure should make crystal-clear a) what is being plotted; b) what are the axes; c) what do colors, shapes, and sizes represent; d) the message the figure wants to convey. Each figure is accompanied by a (sometimes long) caption, where the details can be explained further, but the main message should be clear from glancing at the figure (often, figures are the first thing editors and referees look at).
+
+Many scientific publications contain very poor graphics: labels are missing, scales are unintelligible, there is no explanation of some graphical elements. Moreover, some color graphs are impossible to understand if printed in black and white, or difficult to discern for color-blind people.
+
+Given the effort that you put in your science, you want to ensure that it is well presented and accessible. The investment to master some plotting software will be rewarded by pleasing graphics that convey a clear message.
+
+In this section, we introduce `ggplot2`, a plotting package for `R` This package was developed by Hadley Wickham who contributed many important packages to `R` (including `dplyr`). Unlike many other plotting systems, `ggplot2` is deeply rooted in a  "philosophical" vision. The goal is to conceive a grammar for all graphical representation of data.  Leland Wilkinson and collaborators proposed The Grammar of
+Graphics. It follows the idea of a well-formed sentence that is composed of a subject, a predicate, and an object. The Grammar of Graphics likewise aims at describing a well-formed graph by a grammar that captures a very wide range of statistical and scientific graphics. This might be more clear with an example -- Take a simple two-dimensional scatterplot. How can we describe it? We have:
+
+- **Data** The data we want to plot.
+
+- **Mapping** What part of the data is associated with a particular visual feature? For example: Which column is associated with the x-axis? Which with the y-axis? Which column corresponds to the shape or the color of the points? In `ggplot2` lingo, these are called *aesthetic mappings* (`aes`).
+
+- **Geometry** Do we want to draw points? Lines? In `ggplot2` we speak of *geometries* (`geom`).
+  
+- **Scale** Do we want the sizes and shapes of the points to scale according to some value? Linearly? Logarithmically? Which palette
+    of colors do we want to use?
+
+- **Coordinate** We need to choose a coordinate system (e.g., Cartesian, polar).
+
+- **Faceting** Do we want to produce different panels, partitioning the data according to one (or more) of the variables?
+
+This basic grammar can be extended by adding statistical transformations of the data (e.g., regression, smoothing), multiple layers, adjustment of position (e.g., stack bars instead of plotting them side-by-side), annotations, and so on.
+
+Exactly like in the grammar of a natural language, we can easily change the meaning of a "sentence" by adding or removing parts. Also, it is very easy to completely change the type of geometry if we are moving from say a histogram to a boxplot or a violin plot, as these types of plots are meant to describe one-dimensional distributions. Similarly, we can go from points to lines, changing one "word" in our code. Finally, the look and feel of the graphs is controlled by a theming system, separating the content from the presentation.
+
+## Basic `ggplot2`
+
+`ggplot2` ships with a simplified graphing function, called `qplot`. In this introduction we are not going to use it, and we concentrate instead on the function `ggplot`, which gives you complete control over your plotting. 
+
+A particularity of `ggplot2` is that it accepts exclusively data organized in tables (a `data.frame` or a `tbl` object). Thus, all of your
+data needs to be converted into a data frame format for plotting. 
+
+For our first plot, we're going to produce a barplot of the number of papers by journal:
+
+```{r}
+ggplot(data = papers) # the data
+```
+
+As you can see, nothing is drawn: we need to specify what we would like to associate to the *x* axis, and what to the *y* axis (i.e., we want to set the *aesthetic mappings*):
+
+```{r}
+ggplot(data = papers) + # the data
+  aes(x = Source_title) # the aesthetic mapping
+```
+
+Note that we concatenate pieces of our "sentence" using the `+` sign! We've got the axes, but still no graph... we need to specify a geometry. Let's use bars:
+
+```{r}
+ggplot(data = papers) + # the data
+  aes(x = Source_title) + # the aesthetic mapping
+  geom_bar() + # the geometry
+  coord_flip() # swap x and y axes 
+```
+
+That's too much information! Let's first count the number of papers by journal, and then only plot journals who've had more than 100 papers on plankton!
+```{r}
+# you can feed a dplyr pipeline directly into ggplot2
+papers %>% 
+  group_by(Source_title) %>% 
+  tally() %>% 
+  filter(n > 100) %>% 
+  ggplot() + 
+  aes(x = Source_title, y = n) +
+  geom_col() + # geom_bar does the counting for you; if you have the count already, use geom_bar
+  coord_flip()
+```
+
+As you can see, whenever we wrote a well-formed sentence, composed of **data** + **mapping** + **geometry**, we obtained a graph. 
+
+## Scatterplots
+Using `ggplot2`, one can produce very many types of graphs. The package works very well for 2D graphs (or 3D rendered in two dimensions), while it lack capabilities to draw proper 3D graphs, or networks.
+
+The main feature of `ggplot2` is that you can tinker with your graph fairly easily, and with a common grammar. You don't have to settle on a certain presentation of the data until you're ready, and it is very easy to switch from one type of graph to another.
+
+For example, let's calculate the median number of citations by `Year`---older papers should have more citations, and store the result in an object:
+
+```{r}
+pl <- papers %>% group_by(Year) %>% summarise(mm = median(Cited_by)) %>% 
+      ggplot() + aes(x = Year, y = mm) + geom_point()
+
+pl # or show(pl)
+```
+
+We can add a smoother by typing
+```{r, eval = FALSE}
+pl + geom_smooth() # spline by default
+pl + geom_smooth(method = "lm", se = FALSE) # linear model, no standard errors
+```
+
+> **Exercise:** repeat the plot of the median, but choose only papers in `Aquaculture` or `Biogeosciences`. Set the aesthetic mapping `colour` to plot the results by journal.
+
+## Histograms, density and boxplots
+Now we're going to add a new column to the data, counting the number of authors:
+
+```{r}
+papers <- papers %>% 
+  mutate(Num_Authors = str_count(Author_Ids, ";") + 1)
+```
+
+Now let's produce an histogram of the number of authors per paper:
+```{r}
+pl <- papers %>% ggplot() + aes(x = Num_Authors) + geom_histogram(binwidth = 1)
+pl
+```
+
+Let's zoom in the area between 1 and 20:
+```{r}
+pl + xlim(0,20)
+```
+
+Similarly, we can produce boxplots, for example to check whether the number of authors per paper has been raising:
+
+```{r, eval = FALSE}
+papers %>% filter(Year %in% c(1990, 2000, 2010, 2017)) %>% ggplot() + aes(x = as.factor(Year), y = Num_Authors) + geom_boxplot() + ylim(c(0,10))
+```
+
+It is very easy to change geometry, for example switching to a violin plot:
+```{r}
+papers %>% filter(Year %in% c(1990, 2000, 2010, 2017)) %>% ggplot() + aes(x = as.factor(Year), y = Num_Authors) + geom_violin() + ylim(c(0,10))
+```
+
+## Scales
+We can use scales to determine how the aesthetic mappings are displayed. For example, we could set the *x* axis to be in logarithmic scale, or we can choose how the colors, shapes and sizes are used. `ggplot2` uses two types of scales: `continuous` scales are used for continuos variables (e.g., real numbers); `discrete` scales for variables that can only take a certain number of values (e.g., colors, shapes, sizes).
+
+For example, let's plot a histogram of `Cited_by`:
+```{r, warning=FALSE, message=FALSE}
+pl <- ggplot(data = papers) + aes(x = Cited_by) + geom_histogram(binwidth = 1)
+pl # no transformation
+pl + scale_x_continuous(trans = "log") # natural log
+pl + scale_x_continuous(trans = "log10") # base 10 log
+pl + scale_x_continuous(trans = "sqrt", name = "Number of citations")
+pl + scale_x_log10() # shorthand
+```

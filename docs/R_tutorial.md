@@ -32,7 +32,7 @@ To follow this tutorial, you will need to install `R` and `RStudio`
 
 -   Install `R`: download and install `R` from [this page](https://cran.r-project.org/). Choose the right architecture (Windows, Mac, Linux). If possible, install `R` 3.5.1 or above.
 -   Install `RStudio`: go to [this page](https://www.rstudio.com/products/rstudio/download/) and download the "RStudio Desktop Open Source License".
--   Install `R` packages: launch `RStudio`. Click on "Packages" in the bottow-right panel. Click on "Install": a dialog window will open. Type `tidyverse` in the field "Packages" and click on "Install". This might take a few minutes, and ask you to download further packages.
+-   Install `R` packages: launch `RStudio`. Click on "Packages" in the bottow-right panel. Click on "Install": a dialog window will open. Type `tidyverse` in the field "Packages" and click on "Install". This might take a few minutes, and ask you to download further packages. Once you're done, install `igraph` and `ggnetwork` in the same way.
 
 What is R?
 ==========
@@ -72,8 +72,7 @@ Note that if you were to copy and paste (or type) the code into the **Console** 
 
 We start by working on the console, and then start writing simple scripts.
 
-The most basic operation: assignment
-------------------------------------
+### The most basic operation: assignment
 
 The most basic operation in any programming language is the assignment. In `R`, assignment is marked by the operator `<-`. When you type a command in `R`, it is executed, and the output is printed in the **Console**. For example:
 
@@ -100,8 +99,7 @@ x * 2
 
     # [1] 6
 
-Data types
-----------
+### Data types
 
 `R` provides different types of data that can be used in your programs. For each variable `x`, calling `class(x)` prints the type of the variable. The basic data types are:
 
@@ -171,8 +169,7 @@ x
     # [1] "2.3"
     # [1] 2.3
 
-Operators and functions
------------------------
+### Operators and functions
 
 Each data type supports a certain number of operators and functions. For example, numeric variables can be combined with `+` (addition), `-` (subtraction), `*` (multiplication), `/` (division), and `^` (or `**`, exponentiation). A possibly unfamiliar operator is the modulo (`%%`), calculating the remainder of an integer division:
 
@@ -239,17 +236,15 @@ Similarly, you can concatenate several comparison and logical variables using `&
     # [1] FALSE
     # [1] TRUE
 
-Getting help
-------------
+### Getting help
 
 If you want to know more about a function, type `?my_function_name` in the console (e.g., `?abs`). This will open the help page in one of the panels on the right. The same can be accomplished calling `help(abs)`. For more complex questions, check out stackoverflow.
 
-Data structures
----------------
+### Data structures
 
 Besides these simple types, `R` provides structured data types, meant to collect and organize multiple values.
 
-### Vectors
+#### Vectors
 
 The most basic data structure in `R` is the vector, which is an ordered collection of values of the same type. Vectors can be created by concatenating different values with the function `c()` ("combine"):
 
@@ -375,7 +370,7 @@ rep(c(1, 2, 3), 3)
 > -   Does `seq(2, 100, by = 2)` produce the same vector as `(1:50) * 2`?
 > -   What happens if you type `z ^ 2`?
 
-### Matrices
+#### Matrices
 
 A matrix is a two-dimensional table of values. In case of numeric values, you can perform the usual operations on matrices (product, inverse, decomposition, etc.):
 
@@ -466,7 +461,7 @@ mean(Z)
     # [1] 45
     # [1] 5
 
-### Arrays
+#### Arrays
 
 If you need tables with more than two dimensions, use arrays:
 
@@ -527,7 +522,7 @@ dim(M[, , 1, drop = FALSE])
 
     # [1] 4 3 1
 
-### Lists
+#### Lists
 
 Vectors are good if each element is of the same type (e.g., numbers, strings). Lists are used when we want to store elements of different types, or more complex objects (e.g., vectors, matrices, even lists of lists). Each element of the list can be referenced either by its index, or by a label:
 
@@ -553,7 +548,7 @@ mylist[["Values"]][3]  # access third element in second vector
     # [1] "a" "b" "c" "d"
     # [1] 3
 
-### Data frames
+#### Data frames
 
 Data frames contain data organized like in a spreadsheet. The columns (typically representing different measurements) can be of different types (e.g., a column could be the date of measurement, another the weight of the individual, or the volume of the cell, or the treatment of the sample), while the rows typically represent different samples.
 
@@ -923,8 +918,7 @@ You can find highly specialized packages to address your research questions. Her
 
 From within your `R` terminal or `RStudio` you can also call the function `RSiteSearch("KEYWORD")`, which submits a search query to the website [`search.r-project.org`](http://search.r-project.org). The website [`rseek.org`](http://rseek.org) casts an even wider net, as it not only includes package names and their documentation but also blogs and mailing lists related to `R`. If your research interests relate to high-throughput genomic data, you should have a look the packages provided by Bioconductor [(`goo.gl/7dwQlq`)](http://goo.gl/7dwQlq).
 
-Installing a package
---------------------
+### Installing a package
 
 To install a package type
 
@@ -934,8 +928,7 @@ install.packages("name_of_package")
 
 in the **Console**, or choose the panel **Packages** and then click on *Install* in `RStudio`.
 
-Loading a package
------------------
+### Loading a package
 
 To load a package type
 
@@ -952,8 +945,7 @@ if (!require(needed_package, character.only = TRUE, quietly = TRUE)) {
 }
 ```
 
-Example
--------
+### Example
 
 For example, say we want to access the dataset `bacteria`, which reports the incidence of *H. influenzae* in Australian children. The dataset is contained in the package `MASS`.
 
@@ -987,10 +979,10 @@ rnorm(3) # three values from standard normal
 rnorm(3, mean = 5, sd = 4) # specify mean and standard deviation
 ```
 
-    # [1] 0.38615020 0.77373136 0.11443758 0.03127065 0.59949403
-    # [1] 6.865675 7.779819 2.634129 3.604047 8.666689
-    # [1] -0.3260740  0.8002609 -0.8356395
-    # [1] 7.290059 2.871480 7.635311
+    # [1] 0.8398175 0.7135894 0.7965960 0.3569096 0.4158571
+    # [1] 8.578099 4.150204 4.734066 1.987956 8.039721
+    # [1]  0.2385328 -0.2352093 -2.6295174
+    # [1]  2.994349  5.587610 -1.396334
 
 To sample from a set of values, use `sample`:
 
@@ -1002,8 +994,8 @@ sample(v) # simply shuffle the elements
 ```
 
     # [1] "a" "c"
-    # [1] "c" "d" "d" "c" "d" "d"
-    # [1] "a" "c" "b" "d"
+    # [1] "d" "a" "a" "c" "c" "d"
+    # [1] "d" "a" "b" "c"
 
 Writing functions
 =================
@@ -1081,7 +1073,7 @@ order_two_numbers <- function(a, b){
 order_two_numbers(runif(1), runif(1))
 ```
 
-    # [1] 0.2649957 0.1009303
+    # [1] 0.7839206 0.2114501
 
 Organizing and running code
 ===========================
