@@ -3,40 +3,6 @@ R tutorial
 Dmitry Kondrashov & Stefano Allesina
 Fundamentals of Biological Data Analysis -- BIOS 26318
 
--   [Goal](#goal)
--   [Motivation](#motivation)
--   [Before we start](#before-we-start)
--   [What is R?](#what-is-r)
--   [RStudio](#rstudio)
--   [How to write a simple program](#how-to-write-a-simple-program)
-    -   [The most basic operation: assignment](#the-most-basic-operation-assignment)
-    -   [Data types](#data-types)
-    -   [Operators and functions](#operators-and-functions)
-    -   [Getting help](#getting-help)
-    -   [Data structures](#data-structures)
-        -   [Vectors](#vectors)
-        -   [Matrices](#matrices)
-        -   [Arrays](#arrays)
-        -   [Lists](#lists)
-        -   [Data frames](#data-frames)
--   [Reading and writing data](#reading-and-writing-data)
--   [Conditional branching](#conditional-branching)
--   [Looping](#looping)
--   [Useful Functions](#useful-functions)
--   [Packages](#packages)
-    -   [Installing a package](#installing-a-package)
-    -   [Loading a package](#loading-a-package)
-    -   [Example](#example)
--   [Random numbers](#random-numbers)
--   [Writing functions](#writing-functions)
--   [Organizing and running code](#organizing-and-running-code)
--   [Documenting the code using `knitr`](#documenting-the-code-using-knitr)
--   [Very large header](#very-large-header)
-    -   [Large header](#large-header)
-        -   [Smaller header](#smaller-header)
-    -   [Unordered lists](#unordered-lists)
--   [Resources](#resources)
-
 Goal
 ====
 
@@ -1021,10 +987,10 @@ rnorm(3) # three values from standard normal
 rnorm(3, mean = 5, sd = 4) # specify mean and standard deviation
 ```
 
-    # [1] 0.07855127 0.87860617 0.59890342 0.74283516 0.54949817
-    # [1] 3.507011 7.589970 8.804604 3.249616 8.068725
-    # [1] -1.4020251 -0.8302242  0.8593613
-    # [1] 4.750449 6.327154 8.848650
+    # [1] 0.38615020 0.77373136 0.11443758 0.03127065 0.59949403
+    # [1] 6.865675 7.779819 2.634129 3.604047 8.666689
+    # [1] -0.3260740  0.8002609 -0.8356395
+    # [1] 7.290059 2.871480 7.635311
 
 To sample from a set of values, use `sample`:
 
@@ -1035,9 +1001,9 @@ sample(v, 6, replace = TRUE) # with replacement
 sample(v) # simply shuffle the elements
 ```
 
-    # [1] "b" "d"
-    # [1] "b" "d" "a" "b" "a" "a"
-    # [1] "a" "b" "d" "c"
+    # [1] "a" "c"
+    # [1] "c" "d" "d" "c" "d" "d"
+    # [1] "a" "c" "b" "d"
 
 Writing functions
 =================
@@ -1115,7 +1081,7 @@ order_two_numbers <- function(a, b){
 order_two_numbers(runif(1), runif(1))
 ```
 
-    # [1] 0.4615548 0.3698938
+    # [1] 0.2649957 0.1009303
 
 Organizing and running code
 ===========================
