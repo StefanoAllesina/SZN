@@ -15,7 +15,7 @@ To follow the material, you need to:
 Before class, please work through [this tutorial](R_tutorial)
 
 ## Lecture
-We're going to be working on this tutorial
+We're going to be working on [this tutorial](Data_wrangling)
 
 
    
