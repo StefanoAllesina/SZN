@@ -1,2 +1,3 @@
 mv *.md ../docs
-mv Data_wrangling_files ../docs
+rm -r ../docs/Data_wrangling_files
+mv Data_wrangling_files/* ../docs/
