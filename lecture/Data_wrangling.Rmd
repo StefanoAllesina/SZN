@@ -15,6 +15,7 @@ Let's load all of the packages we'll need. If you need to install any of these, 
 library(tidyverse) # data wrangling and visualization
 library(igraph) # network analysis
 library(ggnetwork) # networks in ggplot
+library(stringr) # needed to count patterns in strings
 ```
 
 # Data wrangling

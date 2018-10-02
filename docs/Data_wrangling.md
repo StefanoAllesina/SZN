@@ -12,6 +12,7 @@ Let's load all of the packages we'll need. If you need to install any of these, 
 library(tidyverse) # data wrangling and visualization
 library(igraph) # network analysis
 library(ggnetwork) # networks in ggplot
+library(stringr) # needed to count patterns in strings
 ```
 
 Data wrangling
@@ -57,30 +58,34 @@ head(papers) # first few rows
 ```
 
     ## # A tibble: 6 x 9
-    ##   Authors Author_Ids Title  Year Source_title Cited_by DOI   Document_Type
-    ##   <chr>   <chr>      <chr> <int> <chr>           <int> <chr> <chr>        
-    ## 1 Wu, P.… 571893615… The …  2019 Science of …       NA 10.1… Review       
-    ## 2 Hernán… 670146567… Carb…  2019 Journal of …       NA 10.1… Article      
-    ## 3 Sarmie… 150301568… Cret…  2019 Frontiers i…       NA 10.1… Book Chapter 
-    ## 4 Evans,… 571533034… No s…  2018 Nature Comm…       NA 10.1… Letter       
-    ## 5 Martin… 140163200… High…  2018 Nature Comm…        3 10.1… Article      
-    ## 6 Bernar… 572026700… Mass…  2018 Scientific …       NA 10.1… Article      
-    ## # ... with 1 more variable: EID <chr>
+    ##                                                                       Authors
+    ##                                                                         <chr>
+    ## 1    Wu, P., Kainz, M.J., Bravo, A.G., Åkerblom, S., Sonesten, L., Bishop, K.
+    ## 2 Hernández-León, S., Putzeys, S., Almeida, C., Bécognée, P., Marrero-Díaz, A
+    ## 3                                                       Sarmiento-Rojas, L.F.
+    ## 4 Evans, D., Badger, M.P.S., Foster, G.L., Henehan, M.J., Lear, C.H., Zachos,
+    ## 5 Martin-Platero, A.M., Cleary, B., Kauffman, K., Preheim, S.P., McGillicuddy
+    ## 6 Bernardi Aubry, F., Falcieri, F.M., Chiggiato, J., Boldrin, A., Luna, G.M.,
+    ## # ... with 8 more variables: Author_Ids <chr>, Title <chr>, Year <int>,
+    ## #   Source_title <chr>, Cited_by <int>, DOI <chr>, Document_Type <chr>,
+    ## #   EID <chr>
 
 ``` r
 tail(papers) # last few rows
 ```
 
     ## # A tibble: 6 x 9
-    ##   Authors Author_Ids Title  Year Source_title Cited_by DOI   Document_Type
-    ##   <chr>   <chr>      <chr> <int> <chr>           <int> <chr> <chr>        
-    ## 1 Prell,… 700450836… Vari…  1990 Paleoceanog…       31 10.1… Article      
-    ## 2 HART, … 356101626… Zoop…  1990 Freshwater …       34 10.1… Article      
-    ## 3 Erikss… 162148421… Sele…  1990 Canadian Jo…        7 10.1… Article      
-    ## 4 Glynn,… 562499201… Cora…  1990 Elsevier Oc…       67 10.1… Article      
-    ## 5 Brockm… 660261451… Cycl…  1990 Netherlands…       87 10.1… Article      
-    ## 6 Reid, … 720242645… Phyt…  1990 Netherlands…      156 10.1… Article      
-    ## # ... with 1 more variable: EID <chr>
+    ##                                                                 Authors
+    ##                                                                   <chr>
+    ## 1                               Prell, W.L., Marvil, R.E., Luther, M.E.
+    ## 2                                                            HART, R.C.
+    ## 3                                         Eriksson, C., Pedros-Alio, C.
+    ## 4                                                           Glynn, P.W.
+    ## 5                          Brockmann, U.H., Laane, R.W.P.M., Postma, J.
+    ## 6 Reid, P.C., Lancelot, C., Gieskes, W.W.C., Hagmeier, E., Weichart, G.
+    ## # ... with 8 more variables: Author_Ids <chr>, Title <chr>, Year <int>,
+    ## #   Source_title <chr>, Cited_by <int>, DOI <chr>, Document_Type <chr>,
+    ## #   EID <chr>
 
 ``` r
 glimpse(papers) # structure of the table
@@ -112,20 +117,21 @@ filter(papers, Source_title == "Marine Ecology Progress Series")
 ```
 
     ## # A tibble: 754 x 9
-    ##    Authors      Author_Ids     Title      Year Source_title Cited_by DOI  
-    ##    <chr>        <chr>          <chr>     <int> <chr>           <int> <chr>
-    ##  1 McGinty, N.… 37461825600; … Traits s…  2018 Marine Ecol…       NA 10.3…
-    ##  2 Schulz, I.,… 55452762600; … Remarkab…  2018 Marine Ecol…       NA 10.3…
-    ##  3 Huebert, K.… 25230018900; … Modeled …  2018 Marine Ecol…       NA 10.3…
-    ##  4 Dong, Y., L… 56668131700; … Size-dep…  2018 Marine Ecol…       NA 10.3…
-    ##  5 Paul, A.J.,… 56939822500; … Baltic S…  2018 Marine Ecol…       NA 10.3…
-    ##  6 Van Der Sle… 53664696600; … Non-stat…  2018 Marine Ecol…       NA 10.3…
-    ##  7 Larsson, M.… 57203252521; … Hitchhik…  2018 Marine Ecol…       NA 10.3…
-    ##  8 Brereton, A… 57194189816; … Large-ed…  2018 Marine Ecol…       NA 10.3…
-    ##  9 Kacenas, S.… 56809437100; … Density-…  2018 Marine Ecol…       NA 10.3…
-    ## 10 Umezawa, Y.… 7103308499; 7… Phytopla…  2018 Marine Ecol…        1 10.3…
-    ## # ... with 744 more rows, and 2 more variables: Document_Type <chr>,
-    ## #   EID <chr>
+    ##                                                                        Authors
+    ##                                                                          <chr>
+    ##  1          McGinty, N., Barton, A.D., Record, N.R., Finkel, Z.V., Irwin, A.J.
+    ##  2 Schulz, I., Montresor, M., Klaas, C., Assmy, P., Wolzenburg, S., Gauns, M.,
+    ##  3               Huebert, K.B., Pätsch, J., Hufnagl, M., Kreus, M., Peck, M.A.
+    ##  4                               Dong, Y., Li, Q.P., Liu, Z., Wu, Z., Zhou, W.
+    ##  5                             Paul, A.J., Sommer, U., Paul, C., Riebesell, U.
+    ##  6 Van Der Sleen, P., Rykaczewski, R.R., Turley, B.D., Sydeman, W.J., García-R
+    ##  7       Larsson, M.E., Laczka, O.F., Suthers, I.M., Ajani, P.A., Doblin, M.A.
+    ##  8                                      Brereton, A., Siddons, J., Lewis, D.M.
+    ##  9                                               Kacenas, S.E., Podolsky, R.D.
+    ## 10 Umezawa, Y., Tamaki, A., Suzuki, T., Takeuchi, S., Yoshimizu, C., Tayasu, I
+    ## # ... with 744 more rows, and 8 more variables: Author_Ids <chr>,
+    ## #   Title <chr>, Year <int>, Source_title <chr>, Cited_by <int>,
+    ## #   DOI <chr>, Document_Type <chr>, EID <chr>
 
 You can see that 754 papers mentioning plankton were published in this journal. We have used the command `filter(tbl, conditions)` to select certain observations. We can combine several conditions, by listing them side by side, possibly using logical operators.
 
@@ -142,18 +148,18 @@ select(papers, Source_title, Year)
 ```
 
     ## # A tibble: 19,938 x 2
-    ##    Source_title                      Year
-    ##    <chr>                            <int>
+    ##                        Source_title  Year
+    ##                               <chr> <int>
     ##  1 Science of the Total Environment  2019
-    ##  2 Journal of Marine Systems         2019
-    ##  3 Frontiers in Earth Sciences       2019
-    ##  4 Nature Communications             2018
-    ##  5 Nature Communications             2018
-    ##  6 Scientific Reports                2018
-    ##  7 Ecological Indicators             2018
-    ##  8 Environmental Pollution           2018
-    ##  9 Scientific Reports                2018
-    ## 10 Scientific Reports                2018
+    ##  2        Journal of Marine Systems  2019
+    ##  3      Frontiers in Earth Sciences  2019
+    ##  4            Nature Communications  2018
+    ##  5            Nature Communications  2018
+    ##  6               Scientific Reports  2018
+    ##  7            Ecological Indicators  2018
+    ##  8          Environmental Pollution  2018
+    ##  9               Scientific Reports  2018
+    ## 10               Scientific Reports  2018
     ## # ... with 19,928 more rows
 
 How many journals are represented in the data set? We can use the function `distinct(tbl)` to retain only the rows that differ from each other:
@@ -198,19 +204,21 @@ papers %>% rename(au = Authors)
 ```
 
     ## # A tibble: 19,938 x 9
-    ##    au     Author_Ids Title  Year Source_title Cited_by DOI   Document_Type
-    ##    <chr>  <chr>      <chr> <int> <chr>           <int> <chr> <chr>        
-    ##  1 Wu, P… 571893615… The …  2019 Science of …       NA 10.1… Review       
-    ##  2 Herná… 670146567… Carb…  2019 Journal of …       NA 10.1… Article      
-    ##  3 Sarmi… 150301568… Cret…  2019 Frontiers i…       NA 10.1… Book Chapter 
-    ##  4 Evans… 571533034… No s…  2018 Nature Comm…       NA 10.1… Letter       
-    ##  5 Marti… 140163200… High…  2018 Nature Comm…        3 10.1… Article      
-    ##  6 Berna… 572026700… Mass…  2018 Scientific …       NA 10.1… Article      
-    ##  7 Béjao… 247340666… Mach…  2018 Ecological …       NA 10.1… Article      
-    ##  8 Pazos… 571945595… Micr…  2018 Environment…       NA 10.1… Article      
-    ##  9 Ayala… 570234340… Gela…  2018 Scientific …        1 10.1… Article      
-    ## 10 Jyoth… 780160990… Mud …  2018 Scientific …        2 10.1… Article      
-    ## # ... with 19,928 more rows, and 1 more variable: EID <chr>
+    ##                                                                             au
+    ##                                                                          <chr>
+    ##  1    Wu, P., Kainz, M.J., Bravo, A.G., Åkerblom, S., Sonesten, L., Bishop, K.
+    ##  2 Hernández-León, S., Putzeys, S., Almeida, C., Bécognée, P., Marrero-Díaz, A
+    ##  3                                                       Sarmiento-Rojas, L.F.
+    ##  4 Evans, D., Badger, M.P.S., Foster, G.L., Henehan, M.J., Lear, C.H., Zachos,
+    ##  5 Martin-Platero, A.M., Cleary, B., Kauffman, K., Preheim, S.P., McGillicuddy
+    ##  6 Bernardi Aubry, F., Falcieri, F.M., Chiggiato, J., Boldrin, A., Luna, G.M.,
+    ##  7 Béjaoui, B., Ottaviani, E., Barelli, E., Ziadi, B., Dhib, A., Lavoie, M., G
+    ##  8                                         Pazos, R.S., Bauer, D.E., Gómez, N.
+    ##  9 Ayala, D.J., Munk, P., Lundgreen, R.B.C., Traving, S.J., Jaspers, C., Jørge
+    ## 10 Jyothibabu, R., Balachandran, K.K., Jagadeesan, L., Karnan, C., Arunpandi, 
+    ## # ... with 19,928 more rows, and 8 more variables: Author_Ids <chr>,
+    ## #   Title <chr>, Year <int>, Source_title <chr>, Cited_by <int>,
+    ## #   DOI <chr>, Document_Type <chr>, EID <chr>
 
 Adding new variables using mutate
 ---------------------------------
@@ -259,18 +267,18 @@ papers %>%
 ```
 
     ## # A tibble: 19,938 x 3
-    ##    Source_title                            Year Cited_by
-    ##    <chr>                                  <int>    <dbl>
-    ##  1 Science of the Total Environment        2019        0
-    ##  2 Journal of Marine Systems               2019        0
-    ##  3 Frontiers in Earth Sciences             2019        0
-    ##  4 Nature Communications                   2018        0
-    ##  5 Scientific Reports                      2018        0
-    ##  6 Ecological Indicators                   2018        0
-    ##  7 Environmental Pollution                 2018        0
+    ##                              Source_title  Year Cited_by
+    ##                                     <chr> <int>    <dbl>
+    ##  1       Science of the Total Environment  2019        0
+    ##  2              Journal of Marine Systems  2019        0
+    ##  3            Frontiers in Earth Sciences  2019        0
+    ##  4                  Nature Communications  2018        0
+    ##  5                     Scientific Reports  2018        0
+    ##  6                  Ecological Indicators  2018        0
+    ##  7                Environmental Pollution  2018        0
     ##  8 Journal of Environmental Radioactivity  2018        0
-    ##  9 Scientific Reports                      2018        0
-    ## 10 Nature Communications                   2018        0
+    ##  9                     Scientific Reports  2018        0
+    ## 10                  Nature Communications  2018        0
     ## # ... with 19,928 more rows
 
 ``` r
@@ -280,19 +288,20 @@ papers %>%
 ```
 
     ## # A tibble: 19,938 x 3
-    ##    Source_title                                              Year Cited_by
-    ##    <chr>                                                    <int>    <dbl>
-    ##  1 Science                                                   2001     5199
-    ##  2 Nature                                                    2005     2223
-    ##  3 Proceedings of the National Academy of Sciences of the …  1992     1913
-    ##  4 Annual Review of Marine Science                           2009     1659
-    ##  5 Microbiology and Molecular Biology Reviews                2000     1554
-    ##  6 Nature                                                    2001     1357
-    ##  7 Limnology and Oceanography                                2000     1279
-    ##  8 Nature                                                    1999     1253
-    ##  9 Science                                                   1998     1245
-    ## 10 Science                                                   2004     1237
-    ## # ... with 19,928 more rows
+    ##                                                                   Source_title
+    ##                                                                          <chr>
+    ##  1                                                                     Science
+    ##  2                                                                      Nature
+    ##  3 Proceedings of the National Academy of Sciences of the United States of Ame
+    ##  4                                             Annual Review of Marine Science
+    ##  5                                  Microbiology and Molecular Biology Reviews
+    ##  6                                                                      Nature
+    ##  7                                                  Limnology and Oceanography
+    ##  8                                                                      Nature
+    ##  9                                                                     Science
+    ## 10                                                                     Science
+    ## # ... with 19,928 more rows, and 2 more variables: Year <int>,
+    ## #   Cited_by <dbl>
 
 Producing summaries
 -------------------
@@ -312,9 +321,9 @@ papers %>% summarise(avg = mean(Cited_by),
 ```
 
     ## # A tibble: 1 x 3
-    ##     avg    sd median
-    ##   <dbl> <dbl>  <dbl>
-    ## 1  29.8  77.8     12
+    ##        avg      sd median
+    ##      <dbl>   <dbl>  <dbl>
+    ## 1 29.79918 77.7906     12
 
 Summaries by group
 ------------------
@@ -330,18 +339,18 @@ papers %>% group_by(Source_title, Year) %>%
 
     ## # A tibble: 7,916 x 3
     ## # Groups:   Source_title [2,082]
-    ##    Source_title        Year mean_cits
-    ##    <chr>              <int>     <dbl>
-    ##  1 Zootecnia Tropical  2013      0   
-    ##  2 Zootaxa             2005      9   
-    ##  3 Zootaxa             2007      4.8 
-    ##  4 Zootaxa             2008     10.3 
-    ##  5 Zootaxa             2009     10   
-    ##  6 Zootaxa             2010      1   
-    ##  7 Zootaxa             2011      7   
-    ##  8 Zootaxa             2012      6.2 
-    ##  9 Zootaxa             2013      3.67
-    ## 10 Zootaxa             2015      3.5 
+    ##          Source_title  Year mean_cits
+    ##                 <chr> <int>     <dbl>
+    ##  1 Zootecnia Tropical  2013  0.000000
+    ##  2            Zootaxa  2005  9.000000
+    ##  3            Zootaxa  2007  4.800000
+    ##  4            Zootaxa  2008 10.333333
+    ##  5            Zootaxa  2009 10.000000
+    ##  6            Zootaxa  2010  1.000000
+    ##  7            Zootaxa  2011  7.000000
+    ##  8            Zootaxa  2012  6.200000
+    ##  9            Zootaxa  2013  3.666667
+    ## 10            Zootaxa  2015  3.500000
     ## # ... with 7,906 more rows
 
 Often, you want to produce counts for each category. Then you can use either:
@@ -353,21 +362,21 @@ papers %>%
 ```
 
     ## # A tibble: 13 x 2
-    ##    Document_Type       tot
-    ##    <chr>             <int>
-    ##  1 Abstract Report       1
-    ##  2 Article           17838
-    ##  3 Article in Press     64
-    ##  4 Book                 35
-    ##  5 Book Chapter        243
-    ##  6 Conference Paper    765
+    ##        Document_Type   tot
+    ##                <chr> <int>
+    ##  1   Abstract Report     1
+    ##  2           Article 17838
+    ##  3  Article in Press    64
+    ##  4              Book    35
+    ##  5      Book Chapter   243
+    ##  6  Conference Paper   765
     ##  7 Conference Review     2
-    ##  8 Editorial            40
-    ##  9 Erratum              62
-    ## 10 Letter               35
-    ## 11 Note                135
-    ## 12 Review              611
-    ## 13 Short Survey        107
+    ##  8         Editorial    40
+    ##  9           Erratum    62
+    ## 10            Letter    35
+    ## 11              Note   135
+    ## 12            Review   611
+    ## 13      Short Survey   107
 
 or the shorter:
 
@@ -378,21 +387,21 @@ papers %>%
 ```
 
     ## # A tibble: 13 x 2
-    ##    Document_Type         n
-    ##    <chr>             <int>
-    ##  1 Abstract Report       1
-    ##  2 Article           17838
-    ##  3 Article in Press     64
-    ##  4 Book                 35
-    ##  5 Book Chapter        243
-    ##  6 Conference Paper    765
+    ##        Document_Type     n
+    ##                <chr> <int>
+    ##  1   Abstract Report     1
+    ##  2           Article 17838
+    ##  3  Article in Press    64
+    ##  4              Book    35
+    ##  5      Book Chapter   243
+    ##  6  Conference Paper   765
     ##  7 Conference Review     2
-    ##  8 Editorial            40
-    ##  9 Erratum              62
-    ## 10 Letter               35
-    ## 11 Note                135
-    ## 12 Review              611
-    ## 13 Short Survey        107
+    ##  8         Editorial    40
+    ##  9           Erratum    62
+    ## 10            Letter    35
+    ## 11              Note   135
+    ## 12            Review   611
+    ## 13      Short Survey   107
 
 > **Exercise:** count the number of papers per year. Which year is the most represented in the data?
 
@@ -407,18 +416,18 @@ papers %>% group_by(Year) %>%
 
     ## # A tibble: 19,938 x 3
     ## # Groups:   Year [30]
-    ##     Year Cited_by  zscore
-    ##    <int>    <dbl>   <dbl>
-    ##  1  1990        0 -0.396 
-    ##  2  1990        7 -0.340 
-    ##  3  1990       45 -0.0361
-    ##  4  1990       28 -0.172 
-    ##  5  1990       33 -0.132 
-    ##  6  1990       81  0.251 
-    ##  7  1990       14 -0.284 
-    ##  8  1990       42 -0.0601
-    ##  9  1990      141  0.731 
-    ## 10  1990        6 -0.348 
+    ##     Year Cited_by      zscore
+    ##    <int>    <dbl>       <dbl>
+    ##  1  1990        0 -0.39556334
+    ##  2  1990        7 -0.33965076
+    ##  3  1990       45 -0.03612534
+    ##  4  1990       28 -0.17191303
+    ##  5  1990       33 -0.13197547
+    ##  6  1990       81  0.25142507
+    ##  7  1990       14 -0.28373819
+    ##  8  1990       42 -0.06008787
+    ##  9  1990      141  0.73067575
+    ## 10  1990        6 -0.34763828
     ## # ... with 19,928 more rows
 
 Data plotting
@@ -682,17 +691,17 @@ dt
     ## # A tibble: 58 x 3
     ## # Groups:   Source_title [?]
     ##    Source_title  Year     n
-    ##    <chr>        <int> <int>
-    ##  1 Nature        1990     3
-    ##  2 Nature        1991     2
-    ##  3 Nature        1992     5
-    ##  4 Nature        1993     3
-    ##  5 Nature        1994     5
-    ##  6 Nature        1995     7
-    ##  7 Nature        1996     2
-    ##  8 Nature        1997     4
-    ##  9 Nature        1998     7
-    ## 10 Nature        1999    13
+    ##           <chr> <int> <int>
+    ##  1       Nature  1990     3
+    ##  2       Nature  1991     2
+    ##  3       Nature  1992     5
+    ##  4       Nature  1993     3
+    ##  5       Nature  1994     5
+    ##  6       Nature  1995     7
+    ##  7       Nature  1996     2
+    ##  8       Nature  1997     4
+    ##  9       Nature  1998     7
+    ## 10       Nature  1999    13
     ## # ... with 48 more rows
 
 This table is in tidy format: each journal and year form a row, and the totals are reported for each. If we wanted to publish these data in a table, however, maybe we'd like to report the years as columns (wide table), because it's much easier to read. We can do so by "spreading" the years to the different columns:
@@ -704,9 +713,9 @@ dt %>% spread(Year, n, fill = 0)
     ## # A tibble: 2 x 30
     ## # Groups:   Source_title [2]
     ##   Source_title `1990` `1991` `1992` `1993` `1994` `1995` `1996` `1997`
-    ##   <chr>         <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>
-    ## 1 Nature            3      2      5      3      5      7      2      4
-    ## 2 Science           2      1      2      1      1      3      2      2
+    ## *        <chr>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>
+    ## 1       Nature      3      2      5      3      5      7      2      4
+    ## 2      Science      2      1      2      1      1      3      2      2
     ## # ... with 21 more variables: `1998` <dbl>, `1999` <dbl>, `2000` <dbl>,
     ## #   `2001` <dbl>, `2002` <dbl>, `2003` <dbl>, `2004` <dbl>, `2005` <dbl>,
     ## #   `2006` <dbl>, `2007` <dbl>, `2008` <dbl>, `2009` <dbl>, `2010` <dbl>,
@@ -721,7 +730,7 @@ dt %>% spread(Source_title, n, fill = 0)
 
     ## # A tibble: 29 x 3
     ##     Year Nature Science
-    ##    <int>  <dbl>   <dbl>
+    ##  * <int>  <dbl>   <dbl>
     ##  1  1990      3       2
     ##  2  1991      2       1
     ##  3  1992      5       2
@@ -761,18 +770,18 @@ net %>% group_by(Author_Ids) %>% tally() %>% arrange(desc(n))
 ```
 
     ## # A tibble: 43,764 x 2
-    ##    Author_Ids      n
-    ##    <chr>       <int>
-    ##  1 7003299234     65
+    ##     Author_Ids     n
+    ##          <chr> <int>
+    ##  1  7003299234    65
     ##  2 55667008200    59
     ##  3 57203800765    57
     ##  4 55636631300    56
-    ##  5 6603668686     56
-    ##  6 7004763337     56
-    ##  7 7006045303     49
-    ##  8 7101722555     47
-    ##  9 7202426454     46
-    ## 10 6603028438     41
+    ##  5  6603668686    56
+    ##  6  7004763337    56
+    ##  7  7006045303    49
+    ##  8  7101722555    47
+    ##  9  7202426454    46
+    ## 10  6603028438    41
     ## # ... with 43,754 more rows
 
 Who is the scientist with 65 papers?
@@ -782,12 +791,14 @@ papers %>% filter(grepl("7003299234", Author_Ids)) %>% arrange(Num_Authors) %>% 
 ```
 
     ## # A tibble: 3 x 10
-    ##   Authors Author_Ids Title  Year Source_title Cited_by DOI   Document_Type
-    ##   <chr>   <chr>      <chr> <int> <chr>           <dbl> <chr> <chr>        
-    ## 1 Sebast… 140319742… Hete…  2013 ISME Journal       16 10.1… Article      
-    ## 2 Gasol,… 700329923… Cyto…  2007 Aquatic Mic…       29 10.3… Article      
-    ## 3 Gasol,… 700329923… Usin…  2000 Scientia Ma…      490 10.3… Conference P…
-    ## # ... with 2 more variables: EID <chr>, Num_Authors <dbl>
+    ##                          Authors              Author_Ids
+    ##                            <chr>                   <chr>
+    ## 1     Sebastián, M., Gasol, J.M. 14031974200; 7003299234
+    ## 2     Gasol, J.M., Arístegui, J.  7003299234; 7006816204
+    ## 3 Gasol, J.M., Del Giorgio, P.A.  7003299234; 6603952680
+    ## # ... with 8 more variables: Title <chr>, Year <int>, Source_title <chr>,
+    ## #   Cited_by <dbl>, DOI <chr>, Document_Type <chr>, EID <chr>,
+    ## #   Num_Authors <dbl>
 
 Now we're going to use the tibble `net` to build a large, bipartite network connecting authors to papers:
 
@@ -905,9 +916,10 @@ papers %>% filter(grepl("6507959291", Author_Ids)) %>% arrange(Num_Authors) %>%
 ```
 
     ## # A tibble: 1 x 2
-    ##   Authors                                                 Author_Ids      
-    ##   <chr>                                                   <chr>           
-    ## 1 Hart, M.B., Molina, G.S., Smart, C.W., Widdicombe, C.E. 55983947200; 57…
+    ##                                                   Authors
+    ##                                                     <chr>
+    ## 1 Hart, M.B., Molina, G.S., Smart, C.W., Widdicombe, C.E.
+    ## # ... with 1 more variables: Author_Ids <chr>
 
 Who's the most "important" author? We can use PageRank to score authors, and find the one with the largest value:
 
@@ -924,8 +936,8 @@ papers %>% filter(grepl("7003299234", Author_Ids)) %>% arrange(Num_Authors) %>%
 ```
 
     ## # A tibble: 1 x 2
-    ##   Authors                    Author_Ids             
-    ##   <chr>                      <chr>                  
+    ##                      Authors              Author_Ids
+    ##                        <chr>                   <chr>
     ## 1 Sebastián, M., Gasol, J.M. 14031974200; 7003299234
 
 If you have time and a good computer, you can find what is the diameter of the component `diameter(author_giant)`, measuring how many *degrees of separation* are found in plankton researchers; the betweeness centrality would highlight which authors connect different research groups, etc. Because these calculations require finding a shortest path between any two nodes, they will take several minutes/hours.
